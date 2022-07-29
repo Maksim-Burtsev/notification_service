@@ -59,7 +59,7 @@ def create_mailing(request, mailing: MailingSchema):
     """Создание рассылки"""
     mailing = Mailing.objects.create(**mailing.dict())
 
-    start_sending(mailing)
+    start_sending.delay(mailing.id)
     return {"id": mailing.id}
 
 
@@ -73,7 +73,7 @@ def delete_mailing(request, mailing_id: int):
 
 
 @api.put("/update_mailing/{mailing_id}")
-def update_mailing(requestm, mailing_id: int, mailing: MailingSchema):
+def update_mailing(request, mailing_id: int, mailing: MailingSchema):
     """Обновление рассыки"""
     db_mailing = get_object_or_404(Mailing, id=mailing_id)
 

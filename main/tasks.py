@@ -19,8 +19,9 @@ class MessageTuple(NamedTuple):
 
 
 @shared_task
-def start_sending(mailing: Mailing):
+def start_sending(mailing_id: int):
     """Запускает отправку сообщений или ставит её запуск на будущее время"""
+    mailing = Mailing.objects.get(id=mailing_id)
     clients = Client.objects.filter(operator_code=mailing.attribute)
 
     if not clients.exists():
@@ -50,7 +51,6 @@ def start_sending(mailing: Mailing):
         send.delay(send_list)
     else:
         send.apply_async(args=(send_list,), eta=mailing.start_time)
-        # send.apply_async(eta=timezone.now()+timedelta(seconds=5))
 
 
 @shared_task
