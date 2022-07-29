@@ -45,4 +45,4 @@ class Message(models.Model):
     )
 
     def __str__(self) -> str:
-        return f'{self.client.number}/{self.mailing}'
+        return f'{self.client.phone_number}/{self.mailing}'

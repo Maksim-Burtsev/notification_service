@@ -1,10 +1,14 @@
+from datetime import timedelta
+
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 
 from ninja import NinjaAPI
 from ninja.errors import HttpError
 
 from main.schemas import ClientSchema, MailingSchema
 from main.models import Client, Mailing
+from main.tasks import start_sending
 
 
 api = NinjaAPI()
@@ -55,7 +59,8 @@ def create_mailing(request, mailing: MailingSchema):
     """Создание рассылки"""
     mailing = Mailing.objects.create(**mailing.dict())
 
-    #TODO запуск рассылки
+    # test.apply_async(eta=timezone.now()+timedelta(seconds=5))
+    start_sending(mailing)
     return {"id": mailing.id}
 
 
