@@ -1,8 +1,5 @@
-from datetime import timedelta
-
 from django.shortcuts import get_object_or_404
 from django.db.models import Count
-from django.utils import timezone
 
 from ninja import NinjaAPI
 from ninja.errors import HttpError
@@ -97,11 +94,15 @@ def detail_mailing(request, mailing_id: int):
     return messages
 
 
-@api.get("/general_statics", response = list[MailingWithStatic|None])
+@api.get("/general_statics", response=list[MailingWithStatic | None])
 def general_statics(request):
     """Общая статистика отправленных сообщений по рассылкам"""
 
-    mailings = Mailing.objects.prefetch_related('messages').annotate(total=Count('messages')).all()
+    mailings = (
+        Mailing.objects.prefetch_related("messages")
+        .annotate(total=Count("messages"))
+        .all()
+    )
 
     res = [count_messages_by_status(mailing) for mailing in mailings]
 
