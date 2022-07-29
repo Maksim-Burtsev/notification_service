@@ -25,6 +25,22 @@ services:
       - ./.env
     restart: always
 
+  redis:
+    image: redis:alpine
+
+  celery:
+    restart: always
+    build:
+      context: .
+    command: celery -A notification_service worker -l info
+    volumes:
+      - .:/code
+    env_file:
+      - ./.env
+    depends_on:
+      - db
+      - redis
+      - web
 
 volumes:
   postgres_data:
