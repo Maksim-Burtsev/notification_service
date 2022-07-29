@@ -31,8 +31,13 @@ def update_client(request, client_id: int, client: ClientSchema):
     for attr, value in client.dict().items():
         setattr(db_client, attr, value)
 
-    #TODO try/except 500
-    db_client.save()
+    try:
+        db_client.save()
+    except:
+        raise HttpError(
+            status_code=400, message="Клиент с указанным номером телефона уже существует"
+        )
+
     return {"Success": True}
 
 
@@ -69,7 +74,6 @@ def update_mailing(requestm, mailing_id: int, mailing: MailingSchema):
     for attr, value in mailing.dict().items():
         setattr(db_mailing, attr, value)
 
-    #TODO try/except 500
     db_mailing.save()
 
     return {"Success": True}
