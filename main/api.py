@@ -1,3 +1,5 @@
+from django.shortcuts import get_object_or_404
+
 from ninja import NinjaAPI
 from ninja.errors import HttpError
 
@@ -19,3 +21,24 @@ def add_cliend(request, client: ClientSchema):
     client = Client.objects.create(**client.dict())
 
     return {"id": client.id}
+
+
+@api.put("/update_client/{client_id}")
+def update_client(request, client_id: int, client: ClientSchema):
+    """Обновление атрибутов клиента"""
+    db_client = get_object_or_404(Client, id=client_id)
+
+    for attr, value in client.dict().items():
+        setattr(db_client, attr, value)
+
+    db_client.save()
+    return {"Success": True}
+
+
+@api.delete("/delete_client/{client_id}")
+def delete_client(request, client_id: int):
+    """Удаление клиента"""
+    client = get_object_or_404(Client, id=client_id)
+    client.delete()
+
+    return {"Success": True}
