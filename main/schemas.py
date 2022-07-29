@@ -24,3 +24,17 @@ class MessageSchema(Schema):
     status: str = Field(..., description='Статус отправки')
     mailing_id: int = Field(..., description='Id рассылки', alias='mailing.id')
     cliend_id: int = Field(..., description='Id клиента', alias='client.id')
+
+class CountMessageSchema(Schema):
+    """Схема количества отправленных сообщений"""
+    success: int 
+    wrong: int 
+    waiting: int 
+    trying: int 
+    total: int 
+
+class MailingWithStatic(MailingSchema):
+    """Схема рассылки с количеством отправленных сообщений"""
+    messages_count: CountMessageSchema
+
+

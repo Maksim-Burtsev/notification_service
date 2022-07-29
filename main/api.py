@@ -1,14 +1,16 @@
 from datetime import timedelta
 
 from django.shortcuts import get_object_or_404
+from django.db.models import Count
 from django.utils import timezone
 
 from ninja import NinjaAPI
 from ninja.errors import HttpError
 
-from main.schemas import ClientSchema, MailingSchema, MessageSchema
+from main.schemas import ClientSchema, MailingSchema, MessageSchema, MailingWithStatic
 from main.models import Client, Mailing, Message
 from main.tasks import start_sending
+from main.logic import count_messages_by_status
 
 
 api = NinjaAPI()
@@ -75,6 +77,7 @@ def delete_mailing(request, mailing_id: int):
 
 @api.put("/update_mailing/{mailing_id}")
 def update_mailing(requestm, mailing_id: int, mailing: MailingSchema):
+    """Обновление рассыки"""
     db_mailing = get_object_or_404(Mailing, id=mailing_id)
 
     for attr, value in mailing.dict().items():
@@ -85,10 +88,21 @@ def update_mailing(requestm, mailing_id: int, mailing: MailingSchema):
     return {"Success": True}
 
 
-@api.get("/detail_mailing/{mailing_id}", response=list[MessageSchema | None])
+@api.get("/detail_statics/{mailing_id}", response=list[MessageSchema | None])
 def detail_mailing(request, mailing_id: int):
     """Детальная статистика отправленных сообщений по конкретной рассылке"""
 
     messages = Message.objects.filter(mailing_id=mailing_id).select_related("client")
 
     return messages
+
+
+@api.get("/general_statics", response = list[MailingWithStatic|None])
+def general_statics(request):
+    """Общая статистика отправленных сообщений по рассылкам"""
+
+    mailings = Mailing.objects.prefetch_related('messages').annotate(total=Count('messages')).all()
+
+    res = [count_messages_by_status(mailing) for mailing in mailings]
+
+    return res
