@@ -28,8 +28,9 @@ class Client(models.Model):
 class Message(models.Model):
 
     STATUS_CHOICES = (
-        ("Sent", "Отправлено"),
+        ("Success", "Успешно отправлено"),
         ("Waiting", "Ожидает отправки"),
+        ("Trying", "Не доставлено, но будет новая попытка"),
         ("Wrong", "Не доставлено"),
     )
 

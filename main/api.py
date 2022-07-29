@@ -6,8 +6,8 @@ from django.utils import timezone
 from ninja import NinjaAPI
 from ninja.errors import HttpError
 
-from main.schemas import ClientSchema, MailingSchema
-from main.models import Client, Mailing
+from main.schemas import ClientSchema, MailingSchema, MessageSchema
+from main.models import Client, Mailing, Message
 from main.tasks import start_sending
 
 
@@ -39,7 +39,8 @@ def update_client(request, client_id: int, client: ClientSchema):
         db_client.save()
     except:
         raise HttpError(
-            status_code=400, message="Клиент с указанным номером телефона уже существует"
+            status_code=400,
+            message="Клиент с указанным номером телефона уже существует",
         )
 
     return {"Success": True}
@@ -59,7 +60,6 @@ def create_mailing(request, mailing: MailingSchema):
     """Создание рассылки"""
     mailing = Mailing.objects.create(**mailing.dict())
 
-    # test.apply_async(eta=timezone.now()+timedelta(seconds=5))
     start_sending(mailing)
     return {"id": mailing.id}
 
@@ -72,13 +72,23 @@ def delete_mailing(request, mailing_id: int):
 
     return {"Success": True}
 
+
 @api.put("/update_mailing/{mailing_id}")
 def update_mailing(requestm, mailing_id: int, mailing: MailingSchema):
     db_mailing = get_object_or_404(Mailing, id=mailing_id)
-    
+
     for attr, value in mailing.dict().items():
         setattr(db_mailing, attr, value)
 
     db_mailing.save()
 
     return {"Success": True}
+
+
+@api.get("/detail_mailing/{mailing_id}", response=list[MessageSchema | None])
+def detail_mailing(request, mailing_id: int):
+    """Детальная статистика отправленных сообщений по конкретной рассылке"""
+
+    messages = Message.objects.filter(mailing_id=mailing_id).select_related("client")
+
+    return messages

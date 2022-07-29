@@ -17,3 +17,10 @@ class MailingSchema(Schema):
     text: str = Field(..., description="Сообщение рассылки")
     attribute: str = Field(..., description="Свойство")
     end_time: datetime = Field(..., description="Время окончания рассылки")
+
+class MessageSchema(Schema):
+    """Схема сообщения"""
+    dtime: datetime = Field(..., description="Время создания (или отправки)", alias='datetime')
+    status: str = Field(..., description='Статус отправки')
+    mailing_id: int = Field(..., description='Id рассылки', alias='mailing.id')
+    cliend_id: int = Field(..., description='Id клиента', alias='client.id')
